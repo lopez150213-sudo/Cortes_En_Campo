@@ -1,5 +1,5 @@
 // CONFIGURACIÓN: Reemplazá esto por tu URL de ejecución de Google Apps Script (Debe terminar en /exec)
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz2k_VnIpC5LnoCDAX0Es6Z5q4JF_CB4fYYq4gWTrxnuUut9F1ptpPfp-f1h13PYecJ/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxz8Yy_-zZFIxpEpjdBk595GjNuQ0OnrdbxeDv70macDAwsUkZaypyJ5sAc_WIGRo1i/exec';
 
 document.getElementById('cutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
