@@ -14,11 +14,18 @@
         <div class="form-group">
             <label for="contrato">Número de Contrato</label>
             <input type="text" id="contrato" required inputmode="numeric" placeholder="Ej: 102938">
+            <small id="searchStatus" style="display:block; margin-top:5px; color:#666;"></small>
         </div>
         
         <div class="form-group">
             <label for="nombre">Nombre del Cliente</label>
-            <input type="text" id="nombre" required placeholder="Nombre completo">
+            <input type="text" id="nombre" required readonly placeholder="Se autocompletará..." style="background-color: #e9ecef; cursor: not-allowed;">
+        </div>
+
+        <!-- NUEVO CAMPO: NO. FAJA -->
+        <div class="form-group">
+            <label for="faja">No. Faja</label>
+            <input type="text" id="faja" required readonly placeholder="Se autocompletará..." style="background-color: #e9ecef; cursor: not-allowed;">
         </div>
 
         <div class="form-group">
@@ -43,7 +50,7 @@
             </select>
         </div>
         
-        <button type="submit" id="btnSubmit">Publicar en Caliente</button>
+        <button type="submit" id="btnSubmit" disabled>Publicar en Caliente</button>
     </form>
     
     <div id="statusMessage"></div>
