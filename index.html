@@ -9,7 +9,7 @@
 <body>
 
 <div class="container">
-    <h2>Registro de Gestión</h2>
+    <h2>Bienvenido al Sistema de Registro de Cortes en Campo</h2>
     <form id="cutForm">
         <div class="form-group">
             <label for="contrato">Número de Contrato</label>
@@ -45,12 +45,11 @@
             <select id="estado" required>
                 <option value="Cortado Poste" selected>Cortado Poste</option>
                 <option value="Cortado ONU">Cortado ONU</option>
-                <option value="Reconectado">Reconectado</option>
-                <option value="No se pudo cortar">No se pudo cortar</option>
+              
             </select>
         </div>
         
-        <button type="submit" id="btnSubmit" disabled>Publicar en Caliente</button>
+        <button type="submit" id="btnSubmit" disabled>Enviar</button>
     </form>
     
     <div id="statusMessage"></div>
