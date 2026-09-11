@@ -1,4 +1,4 @@
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxAQQ0AZAKsF_scWF-7EIaQiFvkYUIYCVu50wSwLJSlwzN8VxmJ9tFUJTpTX7n5zhcG/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzoU6Ha65Wt_uvfNa0p25rIkwnmVU3VJtjE5zl7TynNfz8kict-7_plCjTiu7oT4NME/exec';
 
 const contratoInput = document.getElementById('contrato');
 const nombreInput = document.getElementById('nombre');
