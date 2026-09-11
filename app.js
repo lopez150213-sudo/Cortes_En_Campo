@@ -126,3 +126,48 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
         btnSubmit.innerText = 'Enviar y Notificar por WhatsApp';
     }
 });
+
+// 3. EVENTO PARA VER CORTES REGISTRADOS EN LA PESTAÑA "RECEPCION"
+const btnVerCortes = document.getElementById('btnVerCortes');
+if (btnVerCortes) {
+    btnVerCortes.addEventListener('click', async () => {
+        const selectedGestorOption = gestorSelect.options[gestorSelect.selectedIndex];
+        const nombreGestor = selectedGestorOption.value;
+
+        if (!nombreGestor) {
+            alert('Por favor, seleccione un gestor primero para consultar sus cortes.');
+            return;
+        }
+
+        const container = document.getElementById('tablaCortesContainer');
+        const tbody = document.getElementById('tbodyCortes');
+        tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center;">Cargando cortes...</td></tr>';
+        container.style.display = 'block';
+
+        try {
+            const response = await fetch(`${WEB_APP_URL}?action=obtenerCortes&gestor=${encodeURIComponent(nombreGestor)}`);
+            const textData = await response.text();
+            const data = JSON.parse(textData);
+
+            if (data.exito && data.cortes.length > 0) {
+                tbody.innerHTML = '';
+                data.cortes.forEach(c => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="padding: 8px;">${c.fecha}</td>
+                        <td style="padding: 8px;">${c.contrato}</td>
+                        <td style="padding: 8px;">${c.nombre}</td>
+                        <td style="padding: 8px;">${c.gestor}</td>
+                        <td style="padding: 8px; font-weight: bold;">${c.estado}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center;">No hay cortes registrados para este gestor.</td></tr>';
+            }
+        } catch (error) {
+            tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
+            console.error('Error al consultar cortes:', error);
+        }
+    });
+}
