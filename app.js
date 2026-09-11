@@ -1,4 +1,4 @@
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyApWyy_QREForRFZKDXKYZQfYUOavnzQvOsAIM3_WsDv-3y-vd5T89Hc6P7l5ZaHo/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxby1o3Axzdel-VBHVjs8jEGG36u92wa8Ca04BadoivzSmHOd2ix4QisRJmQiYrK5or/exec';
 
 const contratoInput = document.getElementById('contrato');
 const nombreInput = document.getElementById('nombre');
@@ -7,9 +7,9 @@ const searchStatus = document.getElementById('searchStatus');
 const btnSubmit = document.getElementById('btnSubmit');
 const gestorSelect = document.getElementById('gestor');
 
-// Variables en memoria para evitar fallos si el formulario se limpia
 let clienteEncontradoNombre = '';
 let clienteEncontradoTelefono = '';
+let clienteEncontradoMonto = '';
 
 // 1. BUSCAR CONTRATO EN BASE DE DATOS
 contratoInput.addEventListener('blur', async () => {
@@ -22,6 +22,7 @@ contratoInput.addEventListener('blur', async () => {
     telefonoInput.value = ''; 
     clienteEncontradoNombre = '';
     clienteEncontradoTelefono = '';
+    clienteEncontradoMonto = '';
     btnSubmit.disabled = true;
 
     try {
@@ -30,9 +31,9 @@ contratoInput.addEventListener('blur', async () => {
         const data = JSON.parse(textData);
 
         if (data.encontrado) {
-            // Guardamos directamente en memoria
             clienteEncontradoNombre = (data.nombre || '').trim();
             clienteEncontradoTelefono = (data.telefono || '').trim();
+            clienteEncontradoMonto = (data.monto || '').trim();
 
             nombreInput.value = clienteEncontradoNombre;
             telefonoInput.value = clienteEncontradoTelefono; 
@@ -57,13 +58,12 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
     
     const msg = document.getElementById('statusMessage');
     
-    // Prioridad a la variable guardada en memoria, o lectura directa del DOM como respaldo
     const nombreVal = clienteEncontradoNombre || nombreInput.value.trim();
     const telCliente = clienteEncontradoTelefono || telefonoInput.value.trim();
+    const montoVal = clienteEncontradoMonto;
     const contratoVal = contratoInput.value.trim();
     const estadoVal = document.getElementById('estado').value;
 
-    // Obtener gestor y su número asignado
     const selectedGestorOption = gestorSelect.options[gestorSelect.selectedIndex];
     const nombreGestor = selectedGestorOption.value;
     const telGestor = selectedGestorOption.getAttribute('data-telefono');
@@ -93,7 +93,6 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
         msg.innerText = '¡Registro guardado exitosamente!';
         msg.style.display = 'block';
 
-        // CONSTRUCCIÓN DEL MENSAJE DE WHATSAPP
         if (telCliente) {
             let numLimpio = telCliente.replace(/\D/g, '');
             if (!numLimpio.startsWith('505')) {
@@ -101,8 +100,9 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
             }
 
             const saludo = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
+            const textoMonto = montoVal ? ` por un monto pendiente de C$ ${montoVal}` : '';
 
-            const mensaje = `${saludo}, le informamos que su servicio fue suspendido por falta de pago. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
+            const mensaje = `${saludo}, le informamos que su servicio fue suspendido por falta de pago${textoMonto}. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
             
             const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
             window.open(urlWa, '_blank');
@@ -110,11 +110,11 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
             alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
         }
 
-        // Limpiar formulario y variables tras abrir la ventana
         document.getElementById('cutForm').reset();
         searchStatus.innerText = '';
         clienteEncontradoNombre = '';
         clienteEncontradoTelefono = '';
+        clienteEncontradoMonto = '';
         
     } catch (error) {
         msg.className = 'error';
