@@ -5,8 +5,9 @@ const nombreInput = document.getElementById('nombre');
 const telefonoInput = document.getElementById('telefono');
 const searchStatus = document.getElementById('searchStatus');
 const btnSubmit = document.getElementById('btnSubmit');
+const gestorSelect = document.getElementById('gestor');
 
-// 1. BUSCAR CONTRATO Y OBTENER NOMBRE Y TELÉFONO
+// 1. BUSCAR CONTRATO EN BASE DE DATOS
 contratoInput.addEventListener('blur', async () => {
     const contrato = contratoInput.value.trim();
     if (!contrato) return;
@@ -39,15 +40,20 @@ contratoInput.addEventListener('blur', async () => {
     }
 });
 
-// 2. ENVIAR A RECEPCIÓN Y ABRIR WHATSAPP AUTOMÁTICAMENTE
+// 2. REGISTRAR EN RECEPCIÓN Y NOTIFICAR POR WHATSAPP
 document.getElementById('cutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const msg = document.getElementById('statusMessage');
-    const telRaw = telefonoInput.value.trim();
+    const telCliente = telefonoInput.value.trim();
     const nombreVal = nombreInput.value;
     const contratoVal = contratoInput.value;
     const estadoVal = document.getElementById('estado').value;
+
+    // Obtener gestor y su número asignado
+    const selectedGestorOption = gestorSelect.options[gestorSelect.selectedIndex];
+    const nombreGestor = selectedGestorOption.value;
+    const telGestor = selectedGestorOption.getAttribute('data-telefono');
 
     btnSubmit.disabled = true;
     btnSubmit.innerText = 'Procesando gestión...';
@@ -56,7 +62,7 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
     const payload = {
         contrato: contratoVal,
         nombre: nombreVal,
-        gestor: document.getElementById('gestor').value,
+        gestor: nombreGestor,
         estado: estadoVal
     };
 
@@ -74,14 +80,14 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
         msg.innerText = '¡Registro guardado exitosamente!';
         msg.style.display = 'block';
 
-        // LÓGICA DE ENVÍO DE WHATSAPP
-        if (telRaw) {
-            let numLimpio = telRaw.replace(/\D/g, '');
+        // CONSTRUCCIÓN DEL MENSAJE DE WHATSAPP
+        if (telCliente) {
+            let numLimpio = telCliente.replace(/\D/g, '');
             if (!numLimpio.startsWith('505')) {
                 numLimpio = '505' + numLimpio;
             }
 
-            const mensaje = `Estimado/a *${nombreVal}*, le informamos que su servicio contrato *${contratoVal}* ha sido suspendido (${estadoVal}). Para reconectar su servicio, por favor cancele su factura pendiente en nuestros puntos de pago autorizados.`;
+            const mensaje = `Estimado Cliente, le informamos que su servicio fue suspendido por falta de pago. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
             
             const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
             window.open(urlWa, '_blank');
