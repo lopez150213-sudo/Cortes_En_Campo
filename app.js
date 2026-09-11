@@ -1,12 +1,12 @@
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx--vS5LA_v0jQGn4PYRYNsWGWYkNqPCZtT4S2KYoWj6WZPBfwV9lRqJrtgaCwHgD1m/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxAQQ0AZAKsF_scWF-7EIaQiFvkYUIYCVu50wSwLJSlwzN8VxmJ9tFUJTpTX7n5zhcG/exec';
 
 const contratoInput = document.getElementById('contrato');
 const nombreInput = document.getElementById('nombre');
-const fajaInput = document.getElementById('faja');
+const telefonoInput = document.getElementById('telefono');
 const searchStatus = document.getElementById('searchStatus');
 const btnSubmit = document.getElementById('btnSubmit');
 
-// 1. BUSCAR CONTRATO (Al perder el foco del campo)
+// 1. BUSCAR CONTRATO Y OBTENER NOMBRE Y TELÉFONO
 contratoInput.addEventListener('blur', async () => {
     const contrato = contratoInput.value.trim();
     if (!contrato) return;
@@ -14,23 +14,20 @@ contratoInput.addEventListener('blur', async () => {
     searchStatus.innerText = 'Buscando cliente...';
     searchStatus.style.color = '#0066cc';
     nombreInput.value = '';
-    fajaInput.value = ''; 
+    telefonoInput.value = ''; 
     btnSubmit.disabled = true;
 
     try {
-        // Hacemos la petición normal
         const response = await fetch(`${WEB_APP_URL}?contrato=${contrato}`);
-        
-        // Convertimos a texto primero para burlar el bloqueo estricto de tipo MIME/CORS
         const textData = await response.text();
         const data = JSON.parse(textData);
 
         if (data.encontrado) {
-            nombreInput.value = data.nombre;
-            fajaInput.value = data.faja || 'S/F'; 
+            nombreInput.value = data.nombre || '';
+            telefonoInput.value = data.telefono || ''; 
             searchStatus.innerText = 'Cliente encontrado ✔';
             searchStatus.style.color = '#155724';
-            btnSubmit.disabled = false; // Habilitar botón de envío
+            btnSubmit.disabled = false;
         } else {
             searchStatus.innerText = 'Contrato no registrado en la base de datos ❌';
             searchStatus.style.color = '#721c24';
@@ -42,40 +39,57 @@ contratoInput.addEventListener('blur', async () => {
     }
 });
 
-// 2. ENVIAR GESTIÓN A LA PESTAÑA "RECEPCION"
+// 2. ENVIAR A RECEPCIÓN Y ABRIR WHATSAPP AUTOMÁTICAMENTE
 document.getElementById('cutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const msg = document.getElementById('statusMessage');
-    
+    const telRaw = telefonoInput.value.trim();
+    const nombreVal = nombreInput.value;
+    const contratoVal = contratoInput.value;
+    const estadoVal = document.getElementById('estado').value;
+
     btnSubmit.disabled = true;
-    btnSubmit.innerText = 'Publicando en tiempo real...';
+    btnSubmit.innerText = 'Procesando gestión...';
     msg.style.display = 'none';
 
-    // Construimos el paquete de datos (La faja NO se envía al Sheets de destino)
     const payload = {
-        contrato: contratoInput.value,
-        nombre: nombreInput.value,
+        contrato: contratoVal,
+        nombre: nombreVal,
         gestor: document.getElementById('gestor').value,
-        estado: document.getElementById('estado').value
+        estado: estadoVal
     };
 
     try {
-        const response = await fetch(WEB_APP_URL, {
+        await fetch(WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors', // Volvemos a modo seguro no-cors para evitar fallos de escritura
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)
         });
         
-        // Al usar no-cors, asumimos éxito si la petición de red se ejecuta sin disparar el catch
         msg.className = 'success';
-        msg.innerText = '¡Datos publicados en la hoja de Recepción!';
+        msg.innerText = '¡Registro guardado exitosamente!';
         msg.style.display = 'block';
-        
-        // Limpiamos los campos del formulario para la próxima gestión
+
+        // LÓGICA DE ENVÍO DE WHATSAPP
+        if (telRaw) {
+            let numLimpio = telRaw.replace(/\D/g, '');
+            if (!numLimpio.startsWith('505')) {
+                numLimpio = '505' + numLimpio;
+            }
+
+            const mensaje = `Estimado/a *${nombreVal}*, le informamos que su servicio contrato *${contratoVal}* ha sido suspendido (${estadoVal}). Para reconectar su servicio, por favor cancele su factura pendiente en nuestros puntos de pago autorizados.`;
+            
+            const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
+            window.open(urlWa, '_blank');
+        } else {
+            alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
+        }
+
+        // Limpiar formulario
         document.getElementById('cutForm').reset();
         searchStatus.innerText = '';
         
@@ -86,6 +100,6 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
         console.error('Error al enviar:', error);
         btnSubmit.disabled = false;
     } finally {
-        btnSubmit.innerText = 'Publicar en Caliente';
+        btnSubmit.innerText = 'Enviar y Notificar por WhatsApp';
     }
 });
