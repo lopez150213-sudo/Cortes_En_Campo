@@ -7,6 +7,10 @@ const searchStatus = document.getElementById('searchStatus');
 const btnSubmit = document.getElementById('btnSubmit');
 const gestorSelect = document.getElementById('gestor');
 
+// Variables en memoria para evitar fallos si el formulario se limpia
+let clienteEncontradoNombre = '';
+let clienteEncontradoTelefono = '';
+
 // 1. BUSCAR CONTRATO EN BASE DE DATOS
 contratoInput.addEventListener('blur', async () => {
     const contrato = contratoInput.value.trim();
@@ -16,6 +20,8 @@ contratoInput.addEventListener('blur', async () => {
     searchStatus.style.color = '#0066cc';
     nombreInput.value = '';
     telefonoInput.value = ''; 
+    clienteEncontradoNombre = '';
+    clienteEncontradoTelefono = '';
     btnSubmit.disabled = true;
 
     try {
@@ -24,8 +30,13 @@ contratoInput.addEventListener('blur', async () => {
         const data = JSON.parse(textData);
 
         if (data.encontrado) {
-            nombreInput.value = data.nombre || '';
-            telefonoInput.value = data.telefono || ''; 
+            // Guardamos directamente en memoria
+            clienteEncontradoNombre = (data.nombre || '').trim();
+            clienteEncontradoTelefono = (data.telefono || '').trim();
+
+            nombreInput.value = clienteEncontradoNombre;
+            telefonoInput.value = clienteEncontradoTelefono; 
+            
             searchStatus.innerText = 'Cliente encontrado ✔';
             searchStatus.style.color = '#155724';
             btnSubmit.disabled = false;
@@ -45,9 +56,10 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const msg = document.getElementById('statusMessage');
-    const telCliente = telefonoInput.value.trim();
-    // Captura garantizada del valor actual del input
-    const nombreVal = nombreInput.value.trim();
+    
+    // Prioridad a la variable guardada en memoria, o lectura directa del DOM como respaldo
+    const nombreVal = clienteEncontradoNombre || nombreInput.value.trim();
+    const telCliente = clienteEncontradoTelefono || telefonoInput.value.trim();
     const contratoVal = contratoInput.value.trim();
     const estadoVal = document.getElementById('estado').value;
 
@@ -88,10 +100,9 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
                 numLimpio = '505' + numLimpio;
             }
 
-            // Si por alguna razón nombreVal viene vacío, usa 'Cliente' como respaldo
-            const saludoCliente = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
+            const saludo = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
 
-            const mensaje = `${saludoCliente}, le informamos que su servicio fue suspendido por falta de pago. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
+            const mensaje = `${saludo}, le informamos que su servicio fue suspendido por falta de pago. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
             
             const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
             window.open(urlWa, '_blank');
@@ -99,9 +110,11 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
             alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
         }
 
-        // Limpiar formulario
+        // Limpiar formulario y variables tras abrir la ventana
         document.getElementById('cutForm').reset();
         searchStatus.innerText = '';
+        clienteEncontradoNombre = '';
+        clienteEncontradoTelefono = '';
         
     } catch (error) {
         msg.className = 'error';
