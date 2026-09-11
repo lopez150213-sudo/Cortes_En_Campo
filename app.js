@@ -46,8 +46,9 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
     
     const msg = document.getElementById('statusMessage');
     const telCliente = telefonoInput.value.trim();
-    const nombreVal = nombreInput.value;
-    const contratoVal = contratoInput.value;
+    // Captura garantizada del valor actual del input
+    const nombreVal = nombreInput.value.trim();
+    const contratoVal = contratoInput.value.trim();
     const estadoVal = document.getElementById('estado').value;
 
     // Obtener gestor y su número asignado
@@ -81,20 +82,22 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
         msg.style.display = 'block';
 
         // CONSTRUCCIÓN DEL MENSAJE DE WHATSAPP
-     // CONSTRUCCIÓN DEL MENSAJE DE WHATSAPP CON NOMBRE DEL CLIENTE
-if (telCliente) {
-    let numLimpio = telCliente.replace(/\D/g, '');
-    if (!numLimpio.startsWith('505')) {
-        numLimpio = '505' + numLimpio;
-    }
+        if (telCliente) {
+            let numLimpio = telCliente.replace(/\D/g, '');
+            if (!numLimpio.startsWith('505')) {
+                numLimpio = '505' + numLimpio;
+            }
 
-    const mensaje = `Estimado/a *${nombreVal}*, le informamos que su servicio fue suspendido por falta de pago. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
-    
-    const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
-    window.open(urlWa, '_blank');
-} else {
-    alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
-}
+            // Si por alguna razón nombreVal viene vacío, usa 'Cliente' como respaldo
+            const saludoCliente = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
+
+            const mensaje = `${saludoCliente}, le informamos que su servicio fue suspendido por falta de pago. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://portal.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
+            
+            const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
+            window.open(urlWa, '_blank');
+        } else {
+            alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
+        }
 
         // Limpiar formulario
         document.getElementById('cutForm').reset();
