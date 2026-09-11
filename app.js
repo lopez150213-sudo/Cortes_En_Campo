@@ -127,31 +127,24 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
     }
 });
 
-// 3. EVENTO PARA VER CORTES REGISTRADOS EN LA PESTAÑA "RECEPCION"
+
+// 3. EVENTO PARA VER TODOS LOS CORTES REGISTRADOS EN "RECEPCION"
 const btnVerCortes = document.getElementById('btnVerCortes');
 if (btnVerCortes) {
     btnVerCortes.addEventListener('click', async () => {
-        const selectedGestorOption = gestorSelect.options[gestorSelect.selectedIndex];
-        const nombreGestor = selectedGestorOption.value;
-
-        if (!nombreGestor) {
-            alert('Por favor, seleccione un gestor primero para consultar sus cortes.');
-            return;
-        }
-
         const container = document.getElementById('tablaCortesContainer');
         const tbody = document.getElementById('tbodyCortes');
         tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center;">Cargando cortes...</td></tr>';
         container.style.display = 'block';
 
         try {
-            const response = await fetch(`${WEB_APP_URL}?action=obtenerCortes&gestor=${encodeURIComponent(nombreGestor)}`);
+            const response = await fetch(`${WEB_APP_URL}?action=obtenerCortes`);
             const textData = await response.text();
             const data = JSON.parse(textData);
 
             if (data.exito && data.cortes.length > 0) {
                 tbody.innerHTML = '';
-                data.cortes.forEach(c => {
+                data.cortes.reverse().forEach(c => { // .reverse() para mostrar los más recientes primero
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td style="padding: 8px;">${c.fecha}</td>
@@ -163,7 +156,7 @@ if (btnVerCortes) {
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center;">No hay cortes registrados para este gestor.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center;">No hay cortes registrados.</td></tr>';
             }
         } catch (error) {
             tbody.innerHTML = '<tr><td colspan="5" style="padding: 10px; text-align: center; color: red;">Error al obtener datos.</td></tr>';
