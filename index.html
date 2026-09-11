@@ -53,6 +53,27 @@
     
     <div id="statusMessage"></div>
 </div>
+    <button type="button" id="btnVerCortes" style="margin-top: 15px; background-color: #0066cc; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold;">
+    📊 Ver mis cortes registrados
+</button>
+
+<div id="tablaCortesContainer" style="display: none; margin-top: 20px; overflow-x: auto;">
+    <h3 style="margin-bottom: 10px;">Historial de Cortes Registrados</h3>
+    <table border="1" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+        <thead>
+            <tr style="background-color: #0066cc; color: white;">
+                <th style="padding: 8px;">Fecha/Hora</th>
+                <th style="padding: 8px;">Contrato</th>
+                <th style="padding: 8px;">Nombre</th>
+                <th style="padding: 8px;">Gestor</th>
+                <th style="padding: 8px;">Estado</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyCortes">
+            <!-- Filas dinámicas -->
+        </tbody>
+    </table>
+</div>
 
 <script src="app.js"></script>
 </body>
