@@ -1,5 +1,4 @@
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwDy8_hfzxB16rabEErqqmRG7wUUts9IxiQ2MubcBUZqnvXu_fI72gT_2mLmv4btuXe/exec';
-
+const WEB_APP_URL = "/api/buscar-contrato";
 const contratoInput = document.getElementById('contrato');
 const nombreInput = document.getElementById('nombre');
 const telefonoInput = document.getElementById('telefono');
