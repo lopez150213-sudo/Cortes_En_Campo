@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Habilitar CORS para recibir peticiones desde tu sitio
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -9,11 +8,9 @@ export default async function handler(req, res) {
   );
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
-  // Obtener la URL oculta desde la Variable de Entorno
   const targetUrl = process.env.WEB_APP_URL;
 
   if (!targetUrl) {
@@ -21,7 +18,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Si viene una petición POST (al enviar formulario)
     if (req.method === 'POST') {
       const response = await fetch(targetUrl, {
         method: 'POST',
@@ -32,9 +28,11 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } 
 
-    // Si viene una petición GET (al buscar contrato)
-    const queryString = new URLSearchParams(req.query).toString();
-    const response = await fetch(`${targetUrl}?${queryString}`);
+    // Reenviar parámetros GET
+    const queryParams = new URLSearchParams(req.query).toString();
+    const finalUrl = queryParams ? `${targetUrl}?${queryParams}` : targetUrl;
+    
+    const response = await fetch(finalUrl);
     const data = await response.json();
     return res.status(200).json(data);
 
