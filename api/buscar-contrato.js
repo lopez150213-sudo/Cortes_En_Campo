@@ -28,7 +28,6 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } 
 
-    // Reenviar parámetros GET
     const queryParams = new URLSearchParams(req.query).toString();
     const finalUrl = queryParams ? `${targetUrl}?${queryParams}` : targetUrl;
     
