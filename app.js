@@ -79,14 +79,17 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
     };
 
     try {
-        await fetch(WEB_APP_URL, {
+        const res = await fetch(WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)
         });
+
+        if (!res.ok) {
+            throw new Error(`Error en servidor: ${res.status}`);
+        }
         
         msg.className = 'success';
         msg.innerText = '¡Registro guardado exitosamente!';
@@ -98,11 +101,11 @@ document.getElementById('cutForm').addEventListener('submit', async (e) => {
                 numLimpio = '505' + numLimpio;
             }
 
-          const saludo = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
-const textoMonto = montoVal ? ` por un monto pendiente de C$ ${montoVal}` : '';
-const textoContrato = contratoVal ? ` (Contrato N°: *${contratoVal}*)` : '';
+            const saludo = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
+            const textoMonto = montoVal ? ` por un monto pendiente de C$ ${montoVal}` : '';
+            const textoContrato = contratoVal ? ` (Contrato N°: *${contratoVal}*)` : '';
 
-const mensaje = `${saludo}, le informamos que su servicio${textoContrato} fue suspendido por falta de pago${textoMonto}. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://pago.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
+            const mensaje = `${saludo}, le informamos que su servicio${textoContrato} fue suspendido por falta de pago${textoMonto}. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://pago.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
             const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
             window.location.href = urlWa;
         } else {
