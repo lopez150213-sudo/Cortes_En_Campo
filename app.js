@@ -59,7 +59,7 @@ async function buscarContrato(numeroContrato) {
     // MOSTRAR LA FAJA OBTENIDA DE SUPABASE
     const fajaValor = data.Faja || data.faja || '';
     if (fajaBadge && fajaValor) {
-      fajaBadge.innerText = fajaValor; // Muestra ej: "Faja 1229564" o "Sin Faja"
+      fajaBadge.innerText = fajaValor;
       fajaBadge.style.display = 'inline-block';
     } else if (fajaBadge) {
       fajaBadge.style.display = 'none';
@@ -118,9 +118,29 @@ if (cutForm) {
       return;
     }
 
+    if (!telCliente) {
+      alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
+      return;
+    }
+
     btnSubmit.disabled = true;
     btnSubmit.innerText = 'Procesando gestión...';
     if (msg) msg.style.display = 'none';
+
+    // Construcción del número y mensaje
+    let numLimpio = telCliente.replace(/\D/g, '');
+    if (!numLimpio.startsWith('505')) {
+      numLimpio = '505' + numLimpio;
+    }
+
+    const saludo = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
+    const textoMonto = montoVal ? ` por un monto pendiente de C$ ${montoVal}` : '';
+    const textoContrato = contratoVal ? ` (Contrato N°: *${contratoVal}*)` : '';
+
+    const mensaje = `${saludo}, le informamos que su servicio${textoContrato} fue suspendido por falta de pago${textoMonto}. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://pago.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
+    
+    // Usamos el formato universal wa.me que abre nativamente la app
+    const urlWa = `https://wa.me/${numLimpio}?text=${encodeURIComponent(mensaje)}`;
 
     const payload = {
       fecha: new Date().toLocaleString('es-NI'),
@@ -131,9 +151,10 @@ if (cutForm) {
       estado: estadoVal
     };
 
-    // 1. INTENTAR GUARDAR EN GOOGLE SHEETS
+    // 1. GUARDAR EN GOOGLE SHEETS
     try {
       if (GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes("TU_SCRIPT_ID")) {
+        // Ejecutamos la petición de guardado
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -143,41 +164,11 @@ if (cutForm) {
           body: JSON.stringify(payload)
         });
       }
-      
-      if (msg) {
-        msg.className = 'success';
-        msg.innerText = '¡Registro guardado exitosamente!';
-        msg.style.display = 'block';
-      }
     } catch (error) {
       console.error('Error al guardar en Google Sheets:', error);
-      if (msg) {
-        msg.className = 'error';
-        msg.innerText = 'Error al guardar en la hoja, procediendo a WhatsApp...';
-        msg.style.display = 'block';
-      }
     }
 
-    // 2. ABRIR WHATSAPP
-    if (telCliente) {
-      let numLimpio = telCliente.replace(/\D/g, '');
-      if (!numLimpio.startsWith('505')) {
-        numLimpio = '505' + numLimpio;
-      }
-
-      const saludo = nombreVal ? `Estimado/a *${nombreVal}*` : 'Estimado Cliente';
-      const textoMonto = montoVal ? ` por un monto pendiente de C$ ${montoVal}` : '';
-      const textoContrato = contratoVal ? ` (Contrato N°: *${contratoVal}*)` : '';
-
-      const mensaje = `${saludo}, le informamos que su servicio${textoContrato} fue suspendido por falta de pago${textoMonto}. Le invitamos a cancelar su factura en AMPM, SuperExpress, Agentes Banpro, RapiBac, Telepago 18001524, Nuestro Portal Web https://pago.telecablegranada.com/ , Western, Sucursal o Gestor de cliente (${nombreGestor}: ${telGestor}).\n\nSi ya realizó su pago, enviar el comprobante a este número o a Atención al Cliente al 82573189.`;
-      const urlWa = `https://api.whatsapp.com/send?phone=${numLimpio}&text=${encodeURIComponent(mensaje)}`;
-      
-      window.open(urlWa, '_blank');
-    } else {
-      alert('El cliente no tiene un teléfono registrado para enviar WhatsApp.');
-    }
-
-    // 3. REHABILITAR BOTÓN Y LIMPIAR
+    // 2. REHABILITAR Y LIMPIAR EL FORMULARIO
     btnSubmit.disabled = false;
     btnSubmit.innerText = 'Enviar y Notificar por WhatsApp';
 
@@ -187,6 +178,10 @@ if (cutForm) {
     clienteEncontradoNombre = '';
     clienteEncontradoTelefono = '';
     clienteEncontradoMonto = '';
+
+    // 3. ABRIR WHATSAPP
+    // En móviles usamos location.href para evitar que el navegador bloquee la ventana emergente
+    window.location.href = urlWa;
   });
 }
 
